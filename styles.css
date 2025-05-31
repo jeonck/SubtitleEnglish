@@ -1,0 +1,10 @@
+.hidden-content {
+    color: transparent;
+    background-color: currentColor;
+    user-select: none;
+    border-radius: 4px;
+}
+
+.dark .hidden-content {
+    background-color: #374151;
+}

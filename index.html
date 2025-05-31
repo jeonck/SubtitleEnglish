@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 자막으로 영어 공부하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="tailwind.config.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    <div class="container mx-auto p-4 max-w-7xl">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-center mb-2 text-primary">YouTube 자막으로 영어 공부하기</h1>
+            <p class="text-center text-gray-600 dark:text-gray-400">자막 데이터를 입력하고 컬럼을 숨겨가며 영어를 공부해보세요</p>
+        </div>
+
+        <!-- 자막 입력 섹션 -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">자막 입력</h2>
+            <textarea 
+                id="dataInput" 
+                placeholder="아래의 형식으로 자막을 입력하세요.&#10;Time		Subtitle		Translation&#10;&#10;예시:&#10;00:00:27		Hello, how are you?		안녕하세요, 어떻게 지내세요?&#10;00:00:33		I'm fine, thank you.		저는 괜찮습니다, 감사합니다."
+                class="w-full h-40 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-base resize-vertical focus:ring-2 focus:ring-primary focus:border-transparent"
+            ></textarea>
+            <div class="flex flex-wrap gap-3 mt-4">
+                <button onclick="loadSampleData()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors font-medium">
+                    샘플 자막으로 로드
+                </button>                <button onclick="clearData()" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-medium">
+                    초기화
+                </button>
+
+                <button onclick="parseData()" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors font-medium">
+                    학습할 자막으로 생성
+                </button>            </div>
+        </div>
+
+        <!-- 컨트롤 패널 -->
+        <div id="controlPanel" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold mb-4">표시 옵션</h2>
+            <div class="flex flex-wrap gap-3">
+                <button 
+                    id="toggleTime" 
+                    onclick="toggleColumn('time')" 
+                    class="column-toggle bg-primary text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors font-medium"
+                >
+                    시간 숨기기
+                </button>
+                <button 
+                    id="toggleSubtitle" 
+                    onclick="toggleColumn('subtitle')" 
+                    class="column-toggle bg-primary text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors font-medium"
+                >
+                    영어 숨기기
+                </button>
+                <button 
+                    id="toggleTranslation" 
+                    onclick="toggleColumn('translation')" 
+                    class="column-toggle bg-primary text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors font-medium"
+                >
+                    번역 숨기기
+                </button>
+                <button 
+                    onclick="showAll()" 
+                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors font-medium"
+                >
+                    모두 보기
+                </button>
+
+                <a 
+                    href="https://chromewebstore.google.com/detail/language-learning-with-ne/bekopgepchoeepdmokgkpkfhegkeohbl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                >
+                    자막 얻기 설치
+                </a>
+                <a 
+                    href="https://www.youtube.com/watch?v=NKD9WSTnm2g"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+                    onclick="window.open('https://www.youtube.com/watch?v=NKD9WSTnm2g', '_blank', 'width=1024,height=768'); return false;"
+                >
+                    자막 얻기 연습
+                </a>
+                <button 
+                    onclick="toggleYouTube()" 
+                    class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors font-medium"
+                >
+                    YouTube 보기
+                </button>            </div>
+            <!-- YouTube 영상을 표시할 컨테이너 -->
+            <div id="youtubeContainer" class="hidden mt-4">
+                <iframe
+                    width="360"
+                    height="200"
+                    src="https://www.youtube.com/embed/NKD9WSTnm2g"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            </div>
+            <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                💡 팁: 각 행을 클릭하면 해당 행의 내용을 숨기거나 표시할 수 있습니다.
+            </div>
+        </div>
+
+        <!-- 테이블 섹션 -->
+        <div id="tableContainer" class="hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table id="dataTable" class="w-full">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold">시간</th>
+                                <th class="px-4 py-3 text-left font-semibold">영어 자막</th>
+                                <th class="px-4 py-3 text-left font-semibold">한국어 번역</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-200 dark:divide-gray-600">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 정보 -->
+        <div id="stats" class="mt-6 text-center text-gray-600 dark:text-gray-400 hidden">
+            <p id="statsText"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
